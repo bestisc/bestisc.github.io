@@ -1,0 +1,11 @@
+/*初始化计分板默认样式*/
+.grade{
+    position: fixed;
+    width: 100px;
+    height: 600px;
+    left: 50%;
+    top:50%;
+    margin-left: 435px;
+    margin-top: -310px;
+    border: 10px solid #f60;
+}
