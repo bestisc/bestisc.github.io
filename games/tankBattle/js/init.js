@@ -9,7 +9,7 @@
 (function(){    
     var map = document.getElementsByClassName("map")[0];
     var end = document.getElementsByClassName("end")[0];
-    map.className="map display-none";
+    //map.className="map display-none";
     end.className="end display-none";
 })();
 
