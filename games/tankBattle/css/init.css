@@ -14,5 +14,12 @@
     border: 10px solid #666;   
 }
 
+.display-none{
+    display: none!important;
+}
+.display-block{
+    display: block!important;
+}
+
 
 

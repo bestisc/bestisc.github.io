@@ -23,9 +23,27 @@
     color: #066;
     
 }
-.player1{
 
+.start-tips{
+    position: absolute;
+    left: 50%;
+    top: 150px;
+    margin-left: -300px;
+    width: 600px;
+    height: auto;
+    line-height: 30px;
+    text-align: center;
+}
+
+.player{   /*默认单人游戏*/
+    color: #fff!important;
+    background-color: #066!important;
 }
 .player2{
     left: 300px;
+}
+
+/*淡出效果*/
+.test{
+    opacity: 0;
 }
