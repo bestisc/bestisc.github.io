@@ -46,52 +46,127 @@
         },
         operatePlayerTanks1:function(){  //
             var tank = document.getElementsByClassName("tank-init1")[0];
+            var direction = "W";
             document.addEventListener("keydown",(event)=>{
                 switch(event.keyCode){
                     case 87:case 38:{
                         if(parseInt(tank.style.top)>0){
-                            tank.style.top = parseInt(tank.style.top) - 5 + "px";
+                            tank.style.top = parseInt(tank.style.top) - 2 + "px";
                             tank.style.transform="rotate(0deg)";
+                            direction = "W";
                         }
                     };break;//上W
                     case 83:case 40:{
                         if(parseInt(tank.style.top)<550){
-                            tank.style.top = parseInt(tank.style.top) + 5 + "px";
+                            tank.style.top = parseInt(tank.style.top) + 2 + "px";
                             tank.style.transform="rotate(180deg)";
+                            direction = "S";
                         }
                     };break;//下S
                     case 65:case 37:{
                         if(parseInt(tank.style.left)>0){
-                            tank.style.left = parseInt(tank.style.left) - 5 + "px";
+                            tank.style.left = parseInt(tank.style.left) - 2 + "px";
                             tank.style.transform="rotate(270deg)";
+                            direction = "A";
                         }
                     };break;//左A
                     case 68:case 39:{
                         if(parseInt(tank.style.left)<950){
-                            tank.style.left = parseInt(tank.style.left) + 5 + "px";
+                            tank.style.left = parseInt(tank.style.left) + 2 + "px";
                             tank.style.transform="rotate(90deg)";
+                            direction = "D";
                         }
                     };break;//右D
                 }
             },false);
-            document.addEventListener("keydown",(event)=>{
+            document.addEventListener("keyup",(event)=>{
                 if(event.keyCode == 13 || event.keyCode == 32){
-                    tanks.sendBullet(tank); 
+                    tanks.sendBullet(tank,direction); 
                 }
             },false);
         },
         operatePlayerTanks2:function(){  //
             
         },
-        sendBullet:function(tank){  //发射子弹
+        BulletNum:0,//发射的子弹总数
+        sendBullet:function(tank,direction){  //发射子弹
             var map = document.getElementsByClassName("map")[0];
             var x = parseInt(tank.style.left);
             var y = parseInt(tank.style.top);
             var bullet = document.createElement("div"); 
-            bullet.className = "bullet";
-            bullet.style.top = y + "px";
-            bullet.style.left = x + "px";
-            map.appendChild(bullet);
+            bullet.className = "bullet"+" bullet"+tanks.BulletNum;
+            switch(direction){
+                case "W":{
+                    bullet.style.top = y-20 + "px";
+                    bullet.style.left = x+20 + "px";
+                    map.appendChild(bullet);
+                };break;
+                case "S":{
+                    bullet.style.top = y+50 + "px";
+                    bullet.style.left = x+20 + "px";
+                    map.appendChild(bullet);
+                };break;
+                case "A":{
+                    bullet.style.top = y+20 + "px";
+                    bullet.style.left = x-20 + "px";
+                    map.appendChild(bullet);
+                    bullet.style.width = "20px";
+                    bullet.style.height = "10px";
+                };break;
+                case "D":{
+                    bullet.style.top = y+20 + "px";
+                    bullet.style.left = x+50 + "px";
+                    map.appendChild(bullet);
+                    bullet.style.width = "20px";
+                    bullet.style.height = "10px";
+                };break;
+            }
+            var bul = document.getElementsByClassName("bullet"+tanks.BulletNum)[0];
+            tanks.BulletNumAction(direction,tanks.BulletNum);
+            tanks.BulletNum++;
+        },
+        BulletNumAction(direction,num){
+            var map = document.getElementsByClassName("map")[0];
+            var timer = setInterval(()=>{
+                var bul = document.getElementsByClassName("bullet"+num)[0];
+                var x = parseInt(bul.style.left);
+                var y = parseInt(bul.style.top);
+                switch(direction){
+                    case "W":{
+                        if(y>0){
+                            bul.style.top = y - 5 + "px";
+                        }else{
+                            map.removeChild(bul);
+                            clearInterval(timer);
+                        }
+                    };break;
+                    case "S":{
+                        if(y<580){
+                            console.log(y);
+                            bul.style.top = y + 5 + "px";
+                        }else{
+                            map.removeChild(bul);
+                            clearInterval(timer);
+                        }
+                    };break;
+                    case "A":{
+                        if(x>0){
+                            bul.style.left = x - 5 + "px";
+                        }else{
+                            map.removeChild(bul);
+                            clearInterval(timer);
+                        }
+                    };break;
+                    case "D":{
+                        if(x<980){
+                            bul.style.left = x + 5 + "px";
+                        }else{
+                            map.removeChild(bul);
+                            clearInterval(timer);
+                        }
+                    };break;
+                }
+            },40);
         }
     }
 
