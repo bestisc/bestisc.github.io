@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>webSQL</title>
+</head>
+<body>
+<script>
+    // IndexedDB的实现仍然使用API前缀        
+    var indexedDB = window.indexedDB || 
+    // 使用标准的DB API        
+    window.mozIndexedDB || 
+    // 或者Firefox早期版本的IndexedDB        
+    window.webkitIndexedDB; // 或者Chrome的早期版本         
+    // 这两个API，Firefox没有前缀        
+
+    var IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;        
+    var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;         
+
+    // 使用此函数，以日志的形式记录发生的数据库错误        
+    function logerr(e) {
+        console.log("IndexedDB error" + e.code + ": " + e.message);        
+    }         
+    // 此函数异步地获取数据库对象（需要的时候，用于创建和初始化数据库），         
+    // 然后将其传递给f()函数        
+    function withDB(f) {            
+        var request = indexedDB.open("zipcodes"); 
+        // 获取存储邮政编码的数据库            
+        request.onerror = logerr; 
+        // 以日志的方式记录发生的错误            
+        request.onsuccess = function() { 
+            // 或者完成的时候调用此回调函数                
+            var db = request.result; 
+            // request对象的result值就表示该数据库                
+            // 即便该数据库不存在，也总能够打开它                
+            // 通过检查版本号来确定数据库是否已经创建或者初始化                
+            // 如果还没有，就做相应的创建或者初始化的工作                
+            // 如果db已经存在了，那么只需要将它传递给回调函数f()就可以了                
+            if (db.version === "1") f(db); 
+            // 如果db已经初始化了，就直接将它传递给f()函数                
+            else initdb(db, f); 
+            // 否则，先初始化db            
+        }        
+    }
+
+
+
+
+    // 给定一个邮政编码，查询该邮政编码属于哪个城市，
+    // 并将该城市名异步传递给指定的回调函数        
+    function lookupCity(zip, callback) {            
+        withDB(function(db) {                
+            // 为本次查询创建一个事务对象                
+            var transaction = db.transaction(["zipcodes"], 
+            // 所需的对象存储区                    
+            IDBTransaction.READ_ONLY, 
+            // 没有更新                    
+            0); // 没有超时                
+            //从事务中获取对象存储区                
+            var objects = transaction.objectStore("zipcodes");                
+            // 查询和指定的邮政编码的键匹配的对象                
+            // 上述代码是同步的，但是这里的是异步的                
+            var request = objects.get(zip);                
+            request.onerror = logerr; // 以日志形式记录发生的错误                
+            request.onsuccess = function() { // 将结果传递给此函数                    
+            // result对象可以通过request.result属性获取                    
+            var object = request.result;                    
+            if (object) // 如果查询到了，就将城市和州名传递给回调函数                        
+            callback(object.city + ", " + object.state);
+            else // 否则，告诉回调函数，失败了                        
+                callback("Unknown zip code");                
+            }            
+        });        
+    }         
+    // 给定城市名（区分大小写），来查询对应的邮政编码         
+    // 然后挨个将结果异步地传递给指定的回调函数        
+    function lookupZipcodes(city, callback) {            
+        withDB(function(db) {                
+            // 和上述的情况一致，创建一个事务并获取对象存储区                
+            var transaction = db.transaction(["zipcodes"],                    
+            IDBTransaction.READ_ONLY, 0);                
+            var store = transaction.objectStore("zipcodes");                
+            // 这次，从对象存储区中获取城市索引                
+            var index = store.index("cities");                
+            // 此次查询可能会返回很多结果，因此，必须使用游标对象来获取它们                
+            // 要创建一个游标，需要一个表示键值范围的range对象                
+            var range = new IDBKeyRange.only(city); 
+            // 传递一个单键给only()方法获取一个range                
+            // 对象
+            // 上述所有的操作都是同步的                
+            // 现在，请求一个游标，它会以异步的方式返回                
+            var request = index.openCursor(range); // 获取该游标                
+            request.onerror = logerr; // 记录错误                
+            request.onsuccess = function() { 
+                // 将游标传递给此函数                    
+                // 此事件处理程序会调用多次，                    
+                // 每次有匹配查询的记录会调用一次，                    
+                // 然后当标识操作结束的null游标出现的时候，也会调用一次                    
+                var cursor = request.result // 通过request.result获取游标                    
+                if (!cursor) return; // 如果没有游标就说明没有结果了                    
+                var object = cursor.value // 获取匹配的数据项                    
+                callback(object); // 将其传递给回调函数                    
+                cursor.continue (); 
+                // 继续请求下一个匹配的数据项                
+            };            
+        });        
+    }         
+    // 下面展示的，document中的onchange回调函数会用到此方法         
+    // 此方法查询数据库并展示查询到的结果
+            
+
+    function displayCity(zip) {            
+        lookupCity(zip, function(s) { document.getElementById('city ').value = s; });        
+    }         
+    // 这是下面的文档中使用的另一个onchange回调函数         
+    // 它查询数据库并展示查询到的结果        
+    function displayZipcodes(city) {            
+        var output = document.getElementById("zipcodes");            
+        output.innerHTML = "Matching zipcodes:";            
+        lookupZipcodes(city, function(o) {                
+            var div = document.createElement("div");                
+            var text = o.zipcode + ": " + o.city + ", " + o.state;                
+            div.appendChild(document.createTextNode(text));                
+            output.appendChild(div);            
+        });        
+    }         
+    // 建立数据库的结构，并用相应的数据填充它，         
+    // 然后将该数据库传递给f()函数         
+    // 如果数据库还未初始化，withDB()函数会调用此函数         
+    // 这也是此程序中最巧妙的部分        
+    function initdb(db, f) {            
+        // 第一次运行此应用的时候，            
+        // 下载邮政编码数据并将它们存储到数据库中，需要花一些时间            
+        // 因此在下载过程中，有必要给出提示           
+            var statusline = document.createElement("div");            
+            statusline.style.cssText =                
+            "position:fixed; left:0px; top:0px; width:100%;" +                
+            "color:white; background-color: black; font: bold 18pt sans-serif;" +                
+            "padding: 10px; ";            
+            document.body.appendChild(statusline);            
+            function status(msg) { statusline.innerHTML = msg.toString(); };            
+            status("Initializing zipcode database");            
+            // 只有在setVersion请求的onsuccess处理程序中才能定义或者修改IndexedDB数据库的结构            
+            var request = db.setVersion("1"); // 试着更新数据库的版本号            
+            request.onerror = status; // 失败的话，显示状态            
+            request.onsuccess = function() { // 否则，调用此函数                
+            // 这里邮政编码数据库只包含一个对象存储区                
+            // 该存储区包含如下形式的对象：{                
+                // zipcode: "02134", //发送到Zoom                
+                // city: "Allston",                
+                // state: "MA",                
+                // latitude: "42.355147",                
+                // longitude: "-71.13164"                
+                // }
+                //                
+                // 使用对象的"zipcode"属性作为数据库的键                
+                // 同时，使用城市名来创建索引                
+                // 创建一个对象存储区，并为该存储区指定一个名字                
+                // 同时也为包含指定该存储区中键字段属性名的键路径的一个可选对象指定名字                
+                // （如果省略键路径，IndexedDB会定义它自己的唯一的整型键）                
+                var store = db.createObjectStore("zipcodes", 
+                // 存储区名字                    
+                { keyPath: "zipcode" });                
+                // 通过城市名以及邮政编码来索引对象存储区                
+                // 使用此方法，表示键路径的字符串要直接传递过去，                
+                // 并且是作为必需的参数而不是可选对象的一部分                
+                store.createIndex("cities", "city");                
+                // 现在，需要下载邮政编码数据，将它们解析成对象，                
+                // 并将这些对象存储到之前创建的对象存储区中                
+                //                
+                // 包含原始数据的文件内容格式如下：                
+                //                
+                // 02130,Jamaica Plain,MA,42.309998,-71.11171
+                // 02131,Roslindale,MA,42.284678,-71.13052                
+                // 02132,West Roxbury,MA,42.279432,-71.1598                
+                // 02133,Boston,MA,42.338947,-70.919635                
+                // 02134,Allston,MA,42.355147,-71.13164                
+                //                
+                // 令人吃惊的是，美国邮政服务居然没有将这些数据开放                
+                // 因此，这里使用了统计出来的过期的邮政编码数据                
+                // 这些数据均来自                
+                // http://mappinghacks.com/2008/04/28/civicspace-zip-code-database/                
+                // 使用XMLHttpRequest下载这些数据                
+                // 但在获取到数据后，使用新的XHR2 onload事件和onprogress事件来处理                
+                var xhr = new XMLHttpRequest(); // 下载数据所需的XHR对象                
+                xhr.open("GET", "zipcodes.csv"); // 利用HTTP GET方法获取此URL指定的内容                
+                xhr.send(); // 直接获取                
+                xhr.onerror = status; // 显示错误状态                
+                var lastChar = 0,                    
+                numlines = 0; // 已经处理的数量                
+                // 获取数据后，批量处理数据库文件                
+                xhr.onprogress = xhr.onload = function(e) { 
+                    //一个函数同时作为两个事件处理程序                    
+                    // 在接收数据的lastChar和lastNewline之间处理数据块（需要查询newlines，
+                // 因此不需要处理部分记录项）                    
+                var lastNewline = xhr.responseText.lastIndexOf("\n");                    
+                if (lastNewline > lastChar) {                        
+                    var chunk = xhr.responseText.substring(lastChar, lastNewline);                        
+                    lastChar = lastNewline + 1; // 记录下次从哪里开始                        
+                    // 将新的数据块分割成单独的行                        
+                    var lines = chunk.split("\n");                        
+                    numlines += lines.length;                        
+                    // 为了将邮政编码数据库存储到数据库中，                        
+                    // 这里需要事务对象                        
+                    // 在该此函数返回，                        
+                    // 浏览器返回事件循环时，向数据库提交所有使用该对象进行的所有数据库插入操作                        
+                    // 要创建事务对象，需要指定要使用的对象存储区                        
+                    // 并且告诉该对象存储区，                        
+                    // 需要对数据库进行写操作而不只是读操作：                        
+                    var transaction = db.transaction(["zipcodes"], // 对象存储区                            
+                    IDBTransaction.READ_WRITE);                        
+                    // 从事务中获取对象存储区   
+                    var store = transaction.objectStore("zipcodes");                        
+                    // 现在，循环邮政编码文件中的每行数据                        
+                    // 为它们创建相应的对象，并将对象添加到对象存储区中                        
+                    for (var i = 0; i < lines.length; i++) {                            
+                        var fields = lines[i].split(","); // 以逗号分割的值                            
+                        var record = { // 要存储的对象                                
+                            zipcode: fields[0], // 所有属性都是字符串                                
+                            city: fields[1],                                
+                            state: fields[2],                                
+                            latitude: fields[3],                                
+                            longitude: fields[4]                            
+                        };                            
+                        // IndexedDB API最好的部分就是对象存储区*真的*非常简单                            
+                        // 下面就是在数据库中添加一条记录的方式：                            
+                        store.put(record); // 或者使用add()方法避免覆盖                        
+                    }                        
+                    status("Initializing zipcode database: loaded " + numlines + " records.");
+                }                    
+                if (e.type == "load") {                        
+                    // 如果这是最后的载入事件，                        
+                    // 就将所有的邮政编码数据发送给数据库                        
+                    // 但是，由于刚刚处理了4万条数据，可能它还在处理中                        
+                    // 因此这里做个简单的查询                        
+                    // 当此查询成功时，就能够得知数据库已经就绪了                        
+                    // 然后就可以将状态条移除，                        
+                    // 最后调用此前传递给withDB()函数的f()函数                        
+                    lookupCity("02134", function(s) { 
+                        // 奥尔斯顿, 马萨诸塞州                            
+                        document.body.removeChild(statusline);                            
+                        withDB(f);                        
+                    });                    
+                }                
+            }            
+        }        
+    }
+
+</script>
+<div>
+    <p>Enter a zip code to find its city:</p>    
+    Zipcode:<input onchange="displayCity(this.value)" />    
+    City:    <output id="city"></output>    
+</div>    
+<div>        
+    <p>Enter a city name (case sensitive, without state) to find cities and their zipcodes:</p>        
+    City:<input onchange="displayZipcodes(this.value)" />     
+    <div id="zipcodes"></div>    
+</div>    
+    <p><i>This example is only known to work in Firefox 4 and Chrome 11.</i></p>    
+    <p><i>Your first query may take a very long time to complete.</i></p>    
+    <p><i>You may need to start Chrome with --unlimited-quota-for-indexeddb</i></p>
+</body>
+</html>

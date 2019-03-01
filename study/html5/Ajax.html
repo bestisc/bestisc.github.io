@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Ajax</title>
+</head>
+<body>
+    <button>按钮</button>
+<script>
+    document.getElementsByTagName("button")[0].onclick = function(ev){
+        ev.preventDefault();
+        var xhr = new XMLHttpRequest();
+        xhr.open("get","./web.txt");
+        xhr.send(null);
+
+        xhr.onreadystatechange = function(){
+            if(xhr.status>=200&&xhr.status<300||xhr.status==304){
+                if(xhr.readyState == 4){
+                    console.log(xhr);
+                }
+            }
+        }
+        
+    }
+</script>
+<!--
+// 在IE5和IE6中模拟XMLHttpRequest()构造函数
+if (window.XMLHttpRequest === undefined) {
+    window.XMLHttpRequest = function() {        
+        try {            // 如果可用，则使用ActiveX对象的最新版本            
+            return new ActiveXObject("Msxml2.XMLHTTP.6.0");        
+        } catch (e1) {            
+            try {                // 否则，回退到较旧的版本                
+                return new ActiveXObject("Msxml2.XMLHTTP.3.0");            
+            } catch (e2) {                // 否则，抛错                
+                throw new Error("XMLHttpRequest is not supported");            
+            }        
+        }    
+    };
+}
+    /*
+          一个HTTP请求由4部分组成：   
+          •HTTP请求方法或“动作”（verb）   
+          •正在请求的URL   
+          •一个可选的请求头集合，其中可能包括身份验证信息   
+          •一个可选的请求主体
+          */  
+
+    /*
+        服务器返回的HTTP响应包含3部分：
+        •一个数字和文字组成的状态码，用来显示请求的成功和失败   
+        •一个响应头集合   
+        •响应主体
+    */
+
+    /*
+    HTTP的基础请求/响应架构非常简单并且易于使用。
+    但在实践中会有各种各样随之而来的复杂问题：
+    客户端和服务器交换cookie，
+    服务器重定向浏览器到其他服务器，
+    缓存某些资源而剩下的不缓存，
+    某些客户端通过代理服务器发送所有的请求等。
+    XMLHttpRequest不是协议级的HTTP API而是浏览器级的API。
+    浏览器需要考虑cookie、重定向、缓存和代理，但代码只需要担心请求和响应。
+    */
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("method","url"); 
+    /* 
+        method:请求方法 
+        url:资源路径
+    */
+    xhr.setRequestHeader("Content-Type", "text/plain");//post请求需要设置请求头
+    request.send(null); //发送数据
+
+    function postMessage(msg) {    
+        var request = new XMLHttpRequest(); // 新请求    
+        request.open("POST", "/log.php"); // 用POST向服务器端发送脚本    
+        // 用请求主体发送纯文本消息    
+        request.setRequestHeader("Content-Type", 
+        // 请求主体将是纯文本        
+        "text/plain;charset=UTF-8");    
+        request.send(msg); 
+        // 把msg作为请求主体发送    
+        // 请求完成，我们将忽略任何响应和任何错误
+    }
+
+
+    // 发出一个HTTP GET请求以获得指定URL的内容
+    // 当响应成功到达，验证它是否是纯文本
+    // 如果是，把它传递给指定回调函数
+    function getText(url, callback) {    
+        var request = new XMLHttpRequest(); 
+        // 创建新请求    
+        request.open("GET", url); 
+        // 指定待获取的URL    
+        request.onreadystatechange = function() { 
+            // 定义事件处理程序        
+            // 如果请求完成，则它是成功的        
+            if (request.readyState === 4 && request.status === 200) {            
+                var type = request.getResponseHeader("Content-Type");            
+                if (type.match(/^text/)){
+                    // 确保响应是文本                
+                    callback(request.responseText); 
+                    // 把它传递给回调函数 
+                }        
+            }    
+        };    
+            
+        request.send(null); // 立即发送请求
+        }
+
+
+</script> 
+-->
+
+</body>
+</html>

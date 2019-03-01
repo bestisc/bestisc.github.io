@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>localStorage</title>
+</head>
+<body>
+ <script>
+    window.localStorage.setItem("x",1);
+    window.localStorage.setItem("y",2);
+    window.localStorage.setItem("z",3);
+    window.localStorage.setItem("a",4);
+    window.localStorage.setItem("b",5);
+    console.log(window.localStorage.getItem("x"));
+    for(var i=0;i<window.localStorage.length;i++){
+        console.log(window.localStorage.key(i));
+        console.log(window.localStorage.getItem(window.localStorage.key(i)));
+    }
+    //window.localStorage.removeItem();
+    //window.localStorage.clear();
+
+    
+ </script>   
+</body>
+</html>

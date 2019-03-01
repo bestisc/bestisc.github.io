@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>web-worker</title>
+    <style>
+        #wrap{
+            position: fixed;
+            width: 800px;
+            height: 600px;
+            border: 10px solid #000;
+        }
+        #box{
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #f60;
+        }
+    </style>
+</head>
+<body>
+        <input type="text" name="" id="input1">
+        <br>
+        <input type="text" name="" id="input2">
+        <br>  
+        <button id="btn">worker</button>
+    <script>
+        var worker = new Worker("./workers.js");
+        
+        var input1 = document.getElementById("input1");
+        var input2 = document.getElementById("input2");
+        var value1 = 0;
+        var value2 = 0;
+
+        input1.oninput = function(){
+            value1 = input1.value;
+            console.log(value1);
+        }
+
+        input2.oninput = function(){
+            value2 = input2.value;
+            console.log(value2);
+        }
+
+        document.getElementById("btn").onclick = function(ev){
+            //ev.preventDefault();
+            worker.postMessage([value1,value2]);
+            console.log(value1);
+            console.log(value2);
+            console.log("===============");
+        }
+
+
+        worker.onmessage = function(ev){
+            console.log(ev);    
+        }
+
+    </script>
+</body>
+</html>

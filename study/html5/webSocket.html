@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <button>button</button>
+    <script>
+
+        document.getElementsByTagName("button")[0].onclick = function(ev){
+            ev.preventDefault();
+            var socket = new WebSocket("ws://127.0.0.1/study/html5/web.txt");
+
+            socket.onopen = function(e) { /* 套接字已经连接 */ };
+            //socket.onclose = function(e) { /* 套接字已经关闭. */ };
+            socket.onerror = function(e) { /* 出错了 */ 
+                console.log(e);
+            };
+            //socket.onmessage = function(e) {    var message = e.data; /* 服务器发送一条消息 */};
+        }
+    </script>
+</body>
+</html>

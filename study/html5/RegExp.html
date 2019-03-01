@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>RegExp</title>
+</head>
+<body>
+    <input type="text" name="" id="text">
+    <div id="msg"></div>
+<script>
+    var text = document.getElementById("text");
+    var msg = document.getElementById("msg");
+
+    var reg = new RegExp("\\w+");
+
+    text.oninput = function(){
+        console.log(text.value);
+
+        
+
+        msg.innerText = reg.test(text.value);
+    }
+
+    /*
+        ^ $ . * + ? = ! : | \ / () [] {}
+    */
+
+    var pattern1 = /\\/;
+    var pattern2 = / ../;
+</script>    
+</body>
+</html>
