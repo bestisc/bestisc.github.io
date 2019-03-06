@@ -128,7 +128,8 @@
             var keys = [];    
             for (var key in cookie) keys.push(key);
 
-            // 现在定义存储API公共的属性和方法    
+            // 现在定义存储API公共的属性和方法  
+              
             // 存储的cookie的个数    
             this.length = keys.length;    
             // 返回第n个cookie的名字, 如果n越界则返回null    
@@ -158,7 +159,8 @@
 
                 // 通过document.cookie属性来设置cookie        
                 document.cookie = cookie;    
-            };    
+            }; 
+               
             // 删除指定的cookie    
             this.removeItem = function(key) {        
                 if (!(key in cookie)) return; 

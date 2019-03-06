@@ -21,7 +21,15 @@
     //window.localStorage.removeItem();
     //window.localStorage.clear();
 
-    
+    var name = localStorage.username; // 查询一个存储的值
+    name = localStorage["username"]; // 等价于数组表示法
+    if (!name) {    
+        name = prompt("What is your name?"); // 询问用户一个问题    
+        localStorage.username = name; // 存储用户的答案
+    }// 迭代所有存储的name/value对
+    for (var name in localStorage) { // 迭代所有存储的名字    
+        var value = localStorage[name]; // 查询每个名字对应的值
+    }
  </script>   
 </body>
 </html>
