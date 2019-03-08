@@ -5,7 +5,9 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<title>Design Pattern</title>
 	<link rel="stylesheet" href="" />
+	<!--
 	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8" async defer></script>
+	-->
 </head>
 <body>
 	<!-- 
@@ -149,5 +151,31 @@
 </script>
 	<script src="design_pattern5.js" type="text/javascript" charset="utf-8" ></script>
 	-->
+
+	<!-- 命令模式 -->
+	<!--
+	<button id="button1">点击按钮1</button>    
+	<button id="button2">点击按钮2</button>    
+	<button id="button3">点击按钮3</button>
+	<script>
+		var button1 = document.getElementById('button1');
+		var button2 = document.getElementById('button2');
+		var button3 = document.getElementById('button3');
+	</script>
+	-->
+	<div id="ball" style="position:absolute;background:#000;width:50px;height:50px"></div>    
+	输入小球移动后的位置：<input id="pos"/>    
+	<button id="moveBtn">开始移动</button>
+	<script>    
+		var ball = document.getElementById( 'ball' );    
+		var pos = document.getElementById( 'pos' );    
+		var moveBtn = document.getElementById( 'moveBtn' );    
+		moveBtn.onclick = function(){        
+			var animate = new Animate( ball );
+			animate.start( 'left', pos.value, 1000, 'strongEaseOut' );    
+		};
+	</script>
+
+	<script src="design_pattern6.js" type="text/javascript" charset="utf-8" ></script>
 </body>
 </html>
