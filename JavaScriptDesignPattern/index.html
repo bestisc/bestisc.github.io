@@ -78,5 +78,76 @@
 	<!--
 	<script src="design_pattern4.js" type="text/javascript" charset="utf-8" ></script>
 	-->
+
+	<!-- 发布-订阅模式 （观察者模式） -->
+	<!--
+	<button id="count">点我</button>    
+	<div id="show"></div>
+	<script type="text/JavaScript">
+	var Event = (function(){
+		var clientList = {};
+		var listen;
+		var trigger;
+		var remove;
+
+		listen = function(key,fn){
+			if(!clientList[key]){
+				clientList[key] = [];
+			}
+			clientList[key].push(fn);
+		};
+
+		trigger = function(){
+			var key = Array.prototype.shift.call(arguments);
+			var fns = clientList [key];
+			if(!fns || fns.length === 0){
+				return false;
+			}
+			for(var i=0,fn;fn=fns[i++];){
+				fn.apply(this,arguments);
+			}
+		};
+
+		remove = function(key,fn){
+			var fns = clientList[key];
+			if( !fns ){
+				return false;
+			}
+			if( !fn ){
+				fns && (fns.length = 0);
+			}else{
+				for(var le = fns.length -1; le >= 0 ;le--){
+					var _fn = fns[le];
+					if(_fn === fn){
+						fns.splice(le,1);
+					}
+				}
+			}
+		};
+
+		return {
+			listen : listen,
+			trigger : trigger,
+			remove : remove
+		}
+	})();
+
+
+	var a = (function(){    
+		var count = 0;    
+		var button = document.getElementById( 'count' );    
+		button.onclick = function(){        
+			Event.trigger( 'add', count++);    
+		}
+	})();
+	var b = (function(){    
+		var div = document.getElementById( 'show' );    
+		Event.listen( 'add', function( count ){       
+ 			div.innerHTML = count;    
+ 		});
+	})();
+</script>
+	<script src="design_pattern5.js" type="text/javascript" charset="utf-8" ></script>
+	-->
 </body>
 </html>
